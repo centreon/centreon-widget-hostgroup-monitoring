@@ -59,18 +59,24 @@ class HostgroupMonitoring
      * @param bool $isNdo
      * @param string $ndoPrefix
      */
-    public function getHostStates(&$data, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
+    public function getHostStates(&$data, $poller, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
     {
         if (!count($data)) {
             return array();
         }
         if ($isNdo == false) {
             $query = "SELECT h.host_id, h.state, h.name, hhg.hostgroup_id, hg.name as hgname
-                    FROM hosts_hostgroups hhg, hosts h, hostgroups hg
-                    WHERE h.host_id = hhg.host_id
+                    FROM hosts_hostgroups hhg, hostgroups hg, hosts h ";
+            if (isset($poller) && $poller) {
+              $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
+            }
+            $query .= "WHERE h.host_id = hhg.host_id
                     AND h.enabled = 1
                     AND hhg.hostgroup_id = hg.hostgroup_id
                     AND hg.name IN ('".implode("', '", array_keys($data))."') ";
+            if (isset($poller) && $poller) {
+              $query .= "AND i.instance_id=".$this->dbb->escape($poller)." ";
+            }
             if (!$admin) {
                 $query .= $aclObj->queryBuilder("AND", "h.host_id", $aclObj->getHostsString("ID", $this->dbb));
             }
@@ -119,7 +125,7 @@ class HostgroupMonitoring
      * @param bool $isNdo
      * @param string $ndoPrefix
      */
-    public function getServiceStates(&$data, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
+    public function getServiceStates(&$data, $poller, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
     {
         if (!count($data)) {
             return array();
@@ -127,15 +133,21 @@ class HostgroupMonitoring
         if ($isNdo == false) {
             $query = "SELECT DISTINCT h.host_id, s.state, h.name, s.service_id, s.description, hhg.hostgroup_id, hg.name as hgname, ";
             $query .= " (case s.state when 0 then 3 when 2 then 0 when 3 then 2  when 3 then 2 else s.state END) as tri ";
-            $query .= "FROM hosts_hostgroups hhg, hosts h, services s, hostgroups hg ";
+            $query .= "FROM hosts_hostgroups hhg, services s, hostgroups hg, hosts h ";
             if (!$admin) {
                 $query .= ", centreon_acl acl ";
+            }
+            if (isset($poller) && $poller) {
+              $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
             }
             $query .= "WHERE h.host_id = hhg.host_id
                                     AND hhg.host_id = s.host_id
                     AND s.enabled = 1
                     AND hhg.hostgroup_id = hg.hostgroup_id
                     AND hg.name IN ('".implode("', '", array_keys($data))."') ";
+            if (isset($poller) && $poller) {
+              $query .= "AND i.instance_id=".$this->dbb->escape($poller)." ";
+            }
             if (!$admin) {
                 $query .= " AND h.host_id = acl.host_id
                                                     AND acl.service_id = s.service_id
