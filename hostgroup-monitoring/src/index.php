@@ -96,8 +96,14 @@ $serviceStateLabels = array(0 => "Ok",
                             3 => "Unknown",
                             4 => "Pending");
 
-$query = "SELECT SQL_CALC_FOUND_ROWS DISTINCT name, hostgroup_id ";
-$query .= "FROM hostgroups ";
+$query = "SELECT SQL_CALC_FOUND_ROWS DISTINCT hg.name, hg.hostgroup_id ";
+$query .= "FROM hostgroups hg ";
+if (isset($preferences['poller']) && $preferences['poller']) {
+  $query .= "JOIN hosts_hostgroups hhg ON hhg.hostgroup_id=hg.hostgroup_id ";
+  $query .= "JOIN hosts h ON h.host_id=hhg.host_id ";
+  $query .= "JOIN instances i ON i.instance_id=h.instance_id ";
+  $query .= "WHERE i.instance_id=".$dbb->escape($preferences['poller'])." ";
+}
 if (isset($preferences['hg_name_search']) && $preferences['hg_name_search'] != "") {
     $tab = split(" ", $preferences['hg_name_search']);
     $op = $tab[0];
@@ -105,11 +111,11 @@ if (isset($preferences['hg_name_search']) && $preferences['hg_name_search'] != "
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != "") {
-        $query = CentreonUtils::conditionBuilder($query, "name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ");
+        $query = CentreonUtils::conditionBuilder($query, "hg.name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ");
     }
 }
 if (!$centreon->user->admin) {
-    $query = CentreonUtils::conditionBuilder($query, "name IN (".$aclObj->getHostGroupsString("NAME").")");
+    $query = CentreonUtils::conditionBuilder($query, "hg.name IN (".$aclObj->getHostGroupsString("NAME").")");
 }
 
 //$query = CentreonUtils::conditionBuilder($query, "enabled=1");
@@ -136,8 +142,8 @@ while ($row = $res->fetchRow()) {
                                 'host_state'    => array(),
                                 'service_state' => array());
 }
-$hgMonObj->getHostStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
-$hgMonObj->getServiceStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$hgMonObj->getHostStates($data, $preferences['poller'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$hgMonObj->getServiceStates($data, $preferences['poller'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
 
 
 
