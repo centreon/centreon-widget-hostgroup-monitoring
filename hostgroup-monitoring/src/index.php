@@ -98,12 +98,25 @@ $serviceStateLabels = array(0 => "Ok",
 
 $query = "SELECT SQL_CALC_FOUND_ROWS DISTINCT hg.name, hg.hostgroup_id ";
 $query .= "FROM hostgroups hg ";
-if (isset($preferences['poller']) && $preferences['poller']) {
-  $query .= "JOIN hosts_hostgroups hhg ON hhg.hostgroup_id=hg.hostgroup_id ";
-  $query .= "JOIN hosts h ON h.host_id=hhg.host_id ";
-  $query .= "JOIN instances i ON i.instance_id=h.instance_id ";
-  $query .= "WHERE i.instance_id=".$dbb->escape($preferences['poller'])." ";
+$query .= "JOIN hosts_hostgroups hhg ON hhg.hostgroup_id=hg.hostgroup_id ";
+$query .= "JOIN hosts h ON h.host_id=hhg.host_id ";
+$query .= "JOIN instances i ON i.instance_id=h.instance_id ";
+
+if (isset($preferences['poller_search']) && $preferences['poller_search'] != "") {
+    $tab = split(" ", $preferences['poller_search']);
+    $op = $tab[0];
+    if (isset($tab[1])) {
+        $search = $tab[1];
+    }
+    if ($op && isset($search) && $search != "") {
+        $query = CentreonUtils::conditionBuilder($query, "i.name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ");
+    }
 }
+
+if (isset($preferences['poller']) && $preferences['poller']) {
+  $query = CentreonUtils::conditionBuilder($query, " i.instance_id = ".$dbb->escape($preferences['poller'])."");
+}
+
 if (isset($preferences['hg_name_search']) && $preferences['hg_name_search'] != "") {
     $tab = split(" ", $preferences['hg_name_search']);
     $op = $tab[0];
@@ -142,8 +155,8 @@ while ($row = $res->fetchRow()) {
                                 'host_state'    => array(),
                                 'service_state' => array());
 }
-$hgMonObj->getHostStates($data, $preferences['poller'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
-$hgMonObj->getServiceStates($data, $preferences['poller'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$hgMonObj->getHostStates($data, $preferences['poller'], $preferences['poller_search'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$hgMonObj->getServiceStates($data, $preferences['poller'], $preferences['poller_search'], $detailMode, $centreon->user->admin, $aclObj, $preferences);
 
 
 

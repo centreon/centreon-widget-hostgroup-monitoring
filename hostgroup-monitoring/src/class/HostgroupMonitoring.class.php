@@ -59,23 +59,31 @@ class HostgroupMonitoring
      * @param bool $isNdo
      * @param string $ndoPrefix
      */
-    public function getHostStates(&$data, $poller, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
+    public function getHostStates(&$data, $poller, $poller_search, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
     {
         if (!count($data)) {
             return array();
         }
         if ($isNdo == false) {
             $query = "SELECT h.host_id, h.state, h.name, hhg.hostgroup_id, hg.name as hgname
-                    FROM hosts_hostgroups hhg, hostgroups hg, hosts h ";
-            if (isset($poller) && $poller) {
-              $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
-            }
+                      FROM hosts_hostgroups hhg, hostgroups hg, hosts h ";
+            $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
             $query .= "WHERE h.host_id = hhg.host_id
                     AND h.enabled = 1
                     AND hhg.hostgroup_id = hg.hostgroup_id
                     AND hg.name IN ('".implode("', '", array_keys($data))."') ";
             if (isset($poller) && $poller) {
               $query .= "AND i.instance_id=".$this->dbb->escape($poller)." ";
+            }
+            if (isset($poller_search) && $poller_search != "") {
+              $tab = split(" ", $poller_search);
+              $op = $tab[0];
+              if (isset($tab[1])) {
+                $search = $tab[1];
+              }
+              if ($op && isset($search) && $search != "") {
+                $query = CentreonUtils::conditionBuilder($query, "i.name ".CentreonUtils::operandToMysqlFormat($op)." '".$this->dbb->escape($search)."' ");
+              }
             }
             if (!$admin) {
                 $query .= $aclObj->queryBuilder("AND", "h.host_id", $aclObj->getHostsString("ID", $this->dbb));
@@ -125,7 +133,7 @@ class HostgroupMonitoring
      * @param bool $isNdo
      * @param string $ndoPrefix
      */
-    public function getServiceStates(&$data, $poller, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
+    public function getServiceStates(&$data, $poller, $poller_search, $detailFlag = false, $admin, $aclObj, $preferences, $isNdo = false, $ndoPrefix = "nagios_")
     {
         if (!count($data)) {
             return array();
@@ -137,14 +145,22 @@ class HostgroupMonitoring
             if (!$admin) {
                 $query .= ", centreon_acl acl ";
             }
-            if (isset($poller) && $poller) {
-              $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
-            }
+            $query .= "JOIN instances i ON h.instance_id=i.instance_id ";
             $query .= "WHERE h.host_id = hhg.host_id
                                     AND hhg.host_id = s.host_id
                     AND s.enabled = 1
                     AND hhg.hostgroup_id = hg.hostgroup_id
                     AND hg.name IN ('".implode("', '", array_keys($data))."') ";
+            if (isset($poller_search) && $poller_search != "") {
+              $tab = split(" ", $poller_search);
+              $op = $tab[0];
+              if (isset($tab[1])) {
+                $search = $tab[1];
+              }
+              if ($op && isset($search) && $search != "") {
+                $query = CentreonUtils::conditionBuilder($query, "i.name ".CentreonUtils::operandToMysqlFormat($op)." '".$this->dbb->escape($search)."' ");
+              }
+            }
             if (isset($poller) && $poller) {
               $query .= "AND i.instance_id=".$this->dbb->escape($poller)." ";
             }
