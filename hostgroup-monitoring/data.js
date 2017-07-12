@@ -44,7 +44,7 @@ function loadPage()
     jQuery.ajax("./src/index.php?widgetId=" + widgetId + "&page=" + pageNumber, {
         success: function (htmlData) {
             jQuery("#hgMonitoringTable").empty().append(htmlData).append(function() {
-                var h = document.getElementById("hgMonitoringTable").scrollHeight + 0;
+                var h = document.getElementById("hgMonitoringTable").scrollHeight;
                 parent.iResize(window.name, h);
             });
         }
