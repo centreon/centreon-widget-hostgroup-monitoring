@@ -50,7 +50,7 @@ session_start();
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
     exit;
 }
-$db = $dependencyInjector['configuration_db'];
+$db = new CentreonDB();
 if (CentreonSession::checkSession(session_id(), $db) == 0) {
     exit;
 }
