@@ -18,7 +18,7 @@
     {assign var='classStyle' value='list_two'}
     {/if}
     <tr id="hg-{$hgId}" class ='{$classStyle}'>
-        <td class='ListColLeft'><a href='/{$centreon_web_path}/{$elem.hgurl}' target=_blank> {$elem.name}</a></td>
+        <td class='ListColLeft'><a href='{if ($centreon_web_path != "" )}/{/if}{$centreon_web_path}/{$elem.hgurl}' target=_blank> {$elem.name}</a></td>
         {if $preferences.enable_detailed_mode == 0}
         <td class='ListColLeft'>
             {assign var='link' value=''}
@@ -32,7 +32,7 @@
             {elseif $state == 4}
             {assign var='link' value='&o=h_ok'}
             {/if}
-            <a href='/{$centreon_web_path}/{$elem.hgurlhost}{$link}' target=_blank><span class='state_badge' style='background-color: {$hostStateColors[$state]};'>&nbsp;&nbsp;</span>{$counter}</a>&nbsp;
+            <a href='{if ($centreon_web_path != "" )}/{/if}{$centreon_web_path}/{$elem.hgurlhost}{$link}' target=_blank><span class='state_badge' style='background-color: {$hostStateColors[$state]};'>&nbsp;&nbsp;</span>{$counter}</a>&nbsp;
             {/foreach}
         </td>
         <td class='ListColLeft'>
@@ -49,7 +49,7 @@
             {elseif $state == 4}
             {assign var='link' value='&o=svc_pending'}
             {/if}
-            <a href='/{$centreon_web_path}/{$elem.hgurl}{$link}' target=_blank><span class='state_badge' style='background-color: {$serviceStateColors[$state]};'>&nbsp;&nbsp;</span>{$counter}</a>&nbsp;
+            <a href='{if ($centreon_web_path != "" )}/{/if}{$centreon_web_path}/{$elem.hgurl}{$link}' target=_blank><span class='state_badge' style='background-color: {$serviceStateColors[$state]};'>&nbsp;&nbsp;</span>{$counter}</a>&nbsp;
             {/foreach}
         </td>
         {else}
@@ -66,10 +66,10 @@
         {/if}
     <tr id="host-{$elem2.host_id}" class="child-of-hg-{$hgId}">
         <td class='ListColLeft'></td>
-        <td class='ListColLeft'><a href='/{$centreon_web_path}/main.php?o=hd&p=20202&host_name={$elem2.name}' target=_blank><span class='state_badge {$aColorHost[$elem2.state]}'></span>{$host_name}</a></td>
+        <td class='ListColLeft'><a href='{if ($centreon_web_path != "" )}/{/if}{$centreon_web_path}/main.php?o=hd&p=20202&host_name={$elem2.name}' target=_blank><span class='state_badge {$aColorHost[$elem2.state]}'></span>{$host_name}</a></td>
         <td class='ListColLeft'>
             {foreach item=elem3 from=$elem.service_state[$elem2.host_id]}
-            <a href='/{$centreon_web_path}/main.php?o=svcd&p=20201&amp;host_name={$elem2.name}&service_description={$elem3.description}' target=_blank><span class='state_badge {$aColorService[$elem3.state]}'></span>{$elem3.description}</a>&nbsp;
+            <a href='{if ($centreon_web_path != "" )}/{/if}{$centreon_web_path}/main.php?o=svcd&p=20201&amp;host_name={$elem2.name}&service_description={$elem3.description}' target=_blank><span class='state_badge {$aColorService[$elem3.state]}'></span>{$elem3.description}</a>&nbsp;
             {/foreach}
         </td>
     </tr>
