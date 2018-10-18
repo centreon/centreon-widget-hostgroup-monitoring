@@ -140,7 +140,7 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != "") {
 $query .= "ORDER BY $orderby";
 $query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
 $res = $dbb->query($query);
-$nbRows = $dbb->numberRows();
+$nbRows = $dbb->query('SELECT FOUND_ROWS()')->fetchColumn();
 $data = array();
 $detailMode = false;
 if (isset($preferences['enable_detailed_mode']) && $preferences['enable_detailed_mode']) {
