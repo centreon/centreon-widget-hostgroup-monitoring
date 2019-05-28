@@ -111,21 +111,29 @@ $serviceStateLabels = array(
     4 => "Pending"
 );
 
-$query = "SELECT SQL_CALC_FOUND_ROWS DISTINCT name, hostgroup_id ";
-$query .= "FROM hostgroups ";
+$mainQueryParameters = [];
 
-if (isset($preferences['hg_name_search']) && $preferences['hg_name_search'] != "") {
-    $tab = explode(" ", $preferences['hg_name_search']);
-    $op = $tab[0];
-    if (isset($tab[1])) {
-        $search = $tab[1];
+$query = "SELECT SQL_CALC_FOUND_ROWS DISTINCT name, hostgroup_id ";
+$query .= "FROM hostgroups hg";
+
+if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
+    $results = explode(',', $preferences['hostgroup']);
+    $queryHG ='';
+    foreach ($results as $result) {
+        if ($queryHG != '') {
+            $queryHG .= ', ';
+        }
+        $queryHG .= ":id_" . $result;
+        $mainQueryParameters[] = [
+            'parameter' => ':id_' . $result,
+            'value' => (int)$result,
+            'type' => PDO::PARAM_INT
+        ];
     }
-    if ($op && isset($search) && $search != "") {
-        $query = CentreonUtils::conditionBuilder(
-            $query,
-            "name " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "' "
-        );
-    }
+    $hostgroupHgIdCondition = <<<SQL
+hg.hostgroup_id in ({$queryHG})
+SQL;
+    $query = CentreonUtils::conditionBuilder($query, $hostgroupHgIdCondition);
 }
 
 if (!$centreon->user->admin) {
@@ -139,8 +147,17 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != "") {
 
 $query .= "ORDER BY $orderby";
 $query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
-$res = $dbb->query($query);
-$nbRows = $dbb->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+$res = $dbb->prepare($query);
+
+foreach ($mainQueryParameters as $parameter) {
+    $res->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+}
+
+unset($parameter, $mainQueryParameters);
+$res->execute();
+
+$nbRows = $dbb->numberRows();
 $data = array();
 $detailMode = false;
 if (isset($preferences['enable_detailed_mode']) && $preferences['enable_detailed_mode']) {
