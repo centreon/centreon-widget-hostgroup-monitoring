@@ -63,16 +63,43 @@ class HostgroupMonitoring
             return array();
         }
         $query = "SELECT h.host_id, h.state, h.name, h.alias, hhg.hostgroup_id, hg.name as hgname
-                  FROM hosts_hostgroups hhg, hosts h, hostgroups hg
-                  WHERE h.host_id = hhg.host_id
-                  AND h.enabled = 1
-                  AND hhg.hostgroup_id = hg.hostgroup_id
-                  AND hg.name IN ('".implode("', '", array_keys($data))."') ";
+                  FROM hosts_hostgroups hhg, hostgroups hg, hosts h";
+        if (isset($preferences['host_category']) && $preferences['host_category']) {
+                $query .= " LEFT JOIN customvariables cv ON h.host_id = cv.host_id";
+        }
+        $query .= " WHERE h.host_id = hhg.host_id
+                AND h.enabled = 1
+                AND hhg.hostgroup_id = hg.hostgroup_id
+                AND hg.name IN ('".implode("', '", array_keys($data))."')";
+
+        if (isset($preferences['host_category']) && $preferences['host_category']) {
+            $results = explode(',', $preferences['host_category']);
+            $queryHC ='';
+            foreach ($results as $result) {
+                if ($queryHC != '') {
+                    $queryHC .= ', ';
+                }
+                $queryHC .= ":id_" . $result;
+                $mainQueryParameters[] = [
+                    'parameter' => ':id_' . $result,
+                    'value' => (int)$result,
+                    'type' => PDO::PARAM_INT
+                ];
+            }
+            $query .= "AND cv.name = 'CRITICALITY_ID' AND cv.value IN (" . $queryHC . ")";
+        }
+
         if (!$admin) {
             $query .= $aclObj->queryBuilder("AND", "h.host_id", $aclObj->getHostsString("ID", $this->dbb));
         }
         $query .= " ORDER BY h.name ";
-        $res = $this->dbb->query($query);
+
+        $res = $this->dbb->prepare($query);
+        foreach ($mainQueryParameters as $parameter) {
+            $res->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+        }
+        unset($parameter, $mainQueryParameters);
+        $res->execute();
         while ($row = $res->fetchRow()) {
             $k = $row['hgname'];
             if ($detailFlag == true) {
@@ -107,30 +134,54 @@ class HostgroupMonitoring
         }
         $query = "SELECT DISTINCT h.host_id, s.state, h.name, s.service_id, s.description, hhg.hostgroup_id, hg.name as hgname, ";
         $query .= " (case s.state when 0 then 3 when 2 then 0 when 3 then 2  when 3 then 2 else s.state END) as tri ";
-        $query .= "FROM hosts_hostgroups hhg, hosts h, services s, hostgroups hg ";
+        $query .= "FROM hosts_hostgroups hhg, services s, hostgroups hg, hosts h ";
+        if (isset($preferences['host_category']) && $preferences['host_category']) {
+                $query .= "LEFT JOIN customvariables cv ON h.host_id = cv.host_id";
+        }
         if (!$admin) {
           $query .= ", centreon_acl acl ";
         }
-        $query .= "WHERE h.host_id = hhg.host_id
+        $query .= " WHERE h.host_id = hhg.host_id
                         AND hhg.host_id = s.host_id
                         AND s.enabled = 1
                         AND h.enabled = 1
                         AND hhg.hostgroup_id = hg.hostgroup_id
                         AND hg.name IN ('".implode("', '", array_keys($data))."') ";
+        if (isset($preferences['host_category']) && $preferences['host_category']) {
+            $results = explode(',', $preferences['host_category']);
+            $queryHC ='';
+            foreach ($results as $result) {
+                if ($queryHC != '') {
+                    $queryHC .= ', ';
+                }
+                $queryHC .= ":id_" . $result;
+                $mainQueryParameters[] = [
+                    'parameter' => ':id_' . $result,
+                    'value' => (int)$result,
+                    'type' => PDO::PARAM_INT
+                ];
+            }
+            $query .= "AND cv.name = 'CRITICALITY_ID' AND cv.value IN (" . $queryHC . ")";
+        }
         if (!$admin) {
             $query .= " AND h.host_id = acl.host_id
                         AND acl.service_id = s.service_id
                         AND acl.group_id IN (".$aclObj->getAccessGroupsString().")";
         }
-        $query .= " ORDER BY tri, description ASC"; 
-        $res = $this->dbb->query($query);
+        $query .= " ORDER BY tri, description ASC";
+        $res = $this->dbb->prepare($query);
+        foreach ($mainQueryParameters as $parameter) {
+            $res->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+        }
+        unset($parameter, $mainQueryParameters);
+        $res->execute();
         while ($row = $res->fetchRow()) {
             $k = $row['hgname'];
             if ($detailFlag == true) {
                 if (!isset($data[$k]['service_state'][$row['host_id']])) {
                     $data[$k]['service_state'][$row['host_id']] = array();
                 }
-                if (isset($data[$k]['service_state'][$row['host_id']]) 
+                if (isset($data[$k]['service_state'][$row['host_id']])
                         && !isset($data[$k]['service_state'][$row['host_id']][$row['service_id']])) {
                     $data[$k]['service_state'][$row['host_id']][$row['service_id']] = array();
                 }
