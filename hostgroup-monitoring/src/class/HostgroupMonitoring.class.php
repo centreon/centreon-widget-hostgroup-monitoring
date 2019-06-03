@@ -132,7 +132,8 @@ class HostgroupMonitoring
                     $data[$k]['service_state'][$row['host_id']] = array();
                 }
                 if (isset($data[$k]['service_state'][$row['host_id']])
-                        && !isset($data[$k]['service_state'][$row['host_id']][$row['service_id']])) {
+                    && !isset($data[$k]['service_state'][$row['host_id']][$row['service_id']])
+                ) {
                     $data[$k]['service_state'][$row['host_id']][$row['service_id']] = array();
                 }
                 foreach ($row as $key => $val) {
