@@ -73,7 +73,7 @@ class HostgroupMonitoring
         }
         $query .= " ORDER BY h.name ";
         $res = $this->dbb->query($query);
-        while ($row = $res->fetchRow()) {
+        while ($row = $res->fetch()) {
             $k = $row['hgname'];
             if ($detailFlag == true) {
                 if (!isset($data[$k]['host_state'][$row['name']])) {
@@ -125,7 +125,7 @@ class HostgroupMonitoring
         }
         $query .= " ORDER BY tri, description ASC";
         $res = $this->dbb->query($query);
-        while ($row = $res->fetchRow()) {
+        while ($row = $res->fetch()) {
             $k = $row['hgname'];
             if ($detailFlag == true) {
                 if (!isset($data[$k]['service_state'][$row['host_id']])) {

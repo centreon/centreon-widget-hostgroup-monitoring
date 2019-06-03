@@ -146,7 +146,7 @@ $detailMode = false;
 if (isset($preferences['enable_detailed_mode']) && $preferences['enable_detailed_mode']) {
     $detailMode = true;
 }
-while ($row = $res->fetchRow()) {
+while ($row = $res->fetch()) {
     $data[$row['name']] = array(
         'name' => $row['name'],
         'hg_id' => $row['hostgroup_id'],
