@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2005-2015 CENTREON
+ * Copyright 2005-2019 Centreon
  * Centreon is developped by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
@@ -122,7 +122,7 @@ class HostgroupMonitoring
                         AND acl.service_id = s.service_id
                         AND acl.group_id IN (".$aclObj->getAccessGroupsString().")";
         }
-        $query .= " ORDER BY tri, description ASC"; 
+        $query .= " ORDER BY tri, description ASC";
         $res = $this->dbb->query($query);
         while ($row = $res->fetchRow()) {
             $k = $row['hgname'];
@@ -130,7 +130,7 @@ class HostgroupMonitoring
                 if (!isset($data[$k]['service_state'][$row['host_id']])) {
                     $data[$k]['service_state'][$row['host_id']] = array();
                 }
-                if (isset($data[$k]['service_state'][$row['host_id']]) 
+                if (isset($data[$k]['service_state'][$row['host_id']])
                         && !isset($data[$k]['service_state'][$row['host_id']][$row['service_id']])) {
                     $data[$k]['service_state'][$row['host_id']][$row['service_id']] = array();
                 }
