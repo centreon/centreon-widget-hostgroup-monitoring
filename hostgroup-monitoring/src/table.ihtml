@@ -12,6 +12,7 @@
     </tr>
     {assign var='classStyle' value='list_two'}
     {foreach key=hgId item=elem from=$data}
+    {if !empty($elem.host_state)}
     {if $classStyle == 'list_two'}
     {assign var='classStyle' value='list_one'}
     {else}
@@ -74,6 +75,7 @@
         </td>
     </tr>
     {/foreach}
+    {/if}
     {/if}
     {/foreach}
 </table>

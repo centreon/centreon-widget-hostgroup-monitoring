@@ -71,6 +71,12 @@ class HostgroupMonitoring
         if (!$admin) {
             $query .= $aclObj->queryBuilder("AND", "h.host_id", $aclObj->getHostsString("ID", $this->dbb));
         }
+        if ($preferences['host_severity']) {
+            $query .= " AND h.host_id IN (SELECT host_id FROM customvariables
+                WHERE service_id IS NULL
+                AND name = 'CRITICALITY_ID'
+                AND value = " . $preferences['host_severity'] . "))";
+        }
         $query .= " ORDER BY h.name ";
         $res = $this->dbb->query($query);
         while ($row = $res->fetch()) {
@@ -122,6 +128,12 @@ class HostgroupMonitoring
             $query .= " AND h.host_id = acl.host_id
                 AND acl.service_id = s.service_id
                 AND acl.group_id IN (".$aclObj->getAccessGroupsString().")";
+        }
+        if ($preferences['host_severity']) {
+            $query .= " AND h.host_id IN (SELECT host_id FROM customvariables
+                WHERE service_id IS NULL
+                AND name = 'CRITICALITY_ID'
+                AND value = " . $preferences['host_severity'] . "))";
         }
         $query .= " ORDER BY tri, description ASC";
         $res = $this->dbb->query($query);
