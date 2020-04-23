@@ -67,7 +67,7 @@ try {
     if ($page === false) {
         throw new InvalidArgumentException('Page must be an integer');
     }
-} catch (Exception $e) {
+} catch (InvalidArgumentException $e) {
     echo $e->getMessage() . "<br />";
     exit;
 }
