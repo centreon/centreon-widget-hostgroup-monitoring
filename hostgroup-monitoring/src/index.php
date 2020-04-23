@@ -68,7 +68,7 @@ try {
         throw new InvalidArgumentException('Page must be an integer');
     }
 } catch (InvalidArgumentException $e) {
-    echo $e->getMessage() . "<br />";
+    echo $e->getMessage();
     exit;
 }
 
