@@ -72,7 +72,6 @@ try {
     exit;
 }
 
-
 /**
  * @var $dbb CentreonDB
  */
