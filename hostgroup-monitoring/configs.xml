@@ -12,6 +12,7 @@
     <autoRefresh>10</autoRefresh>
     <preferences>
         <preference label="Hostgroup Name Search" name="hg_name_search" defaultValue="" type="compare" header="Filters"/>
+        <preference label="Host Severity" name="host_severity" defaultValue="" type="hostCategory"/>
         <preference label="Enable Detailed Mode" name="enable_detailed_mode" defaultValue="0" type="boolean"/>
         <preference label="Display alias instead of name for hosts" name="display_host_alias" defaultValue="0" type="boolean"/>
         <preference label="Results" name="entries" defaultValue="20" type="range" min="10" max="100" step="10"/>

@@ -33,26 +33,25 @@
  */
 
 jQuery(function () {
-    loadPage();
+  loadPage();
 });
 
 /**
  * Load page
  */
-function loadPage()
-{
-    jQuery.ajax("./src/index.php?widgetId=" + widgetId + "&page=" + pageNumber, {
-        success: function (htmlData) {
-            jQuery("#hgMonitoringTable").empty().append(htmlData).append(function() {
-                var h = jQuery("#hgMonitoringTable").prop("scrollHeight");
-                parent.iResize(window.name, h);
-            });
-        }
-    });
-    if (autoRefresh) {
-        if (timeout) {
-            clearTimeout(timeout);
-        }
-        timeout = setTimeout(loadPage, (autoRefresh * 1000));
+function loadPage () {
+  jQuery.ajax('./src/index.php?widgetId=' + widgetId + '&page=' + pageNumber, {
+    success: function (htmlData) {
+      jQuery('#hgMonitoringTable').empty().append(htmlData).append(function () {
+        var h = jQuery('#hgMonitoringTable').prop('scrollHeight');
+        parent.iResize(window.name, h);
+      });
     }
+  });
+  if (autoRefresh) {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(loadPage, (autoRefresh * 1000));
+  }
 }
