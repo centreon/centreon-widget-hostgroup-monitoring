@@ -157,18 +157,60 @@ $detailMode = false;
 if (isset($preferences['enable_detailed_mode']) && $preferences['enable_detailed_mode']) {
     $detailMode = true;
 }
+
+$kernel = \App\Kernel::createForWeb();
+$resourceController = $kernel->getContainer()->get(
+    \Centreon\Application\Controller\MonitoringResourceController::class
+);
+
+$buildHostgroupUri = function($hostgroupId, $types, $statuses) use ($resourceController) {
+    return $resourceController->buildListingUri([
+        'filter' => json_encode([
+            'hostGroups' => [$hostgroupId],
+            'resourceTypes' => $types,
+            'statuses' => $statuses,
+        ]),
+    ]);
+};
+
 while ($row = $res->fetch()) {
-    $data[$row['name']] = array(
+    $data[$row['name']] = [
         'name' => $row['name'],
         'hg_id' => $row['hostgroup_id'],
-        'hgurl' => "main.php?p=20201&o=svc&search=&hg=" . $row['hostgroup_id'],
-        "hgurlhost" => "main.php?p=20202&o=h&hostgroups=" . $row['hostgroup_id'],
-        'host_state' => array(),
-        'service_state' => array()
-    );
+        'hg_uri' => $buildHostgroupUri($row['hostgroup_id'], [], []),
+        'hg_service_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], []),
+        'hg_service_ok_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['ok']),
+        'hg_service_warning_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['warning']),
+        'hg_service_critical_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['critical']),
+        'hg_service_unknown_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['unknown']),
+        'hg_service_pending_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['pending']),
+        'hg_host_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], []),
+        'hg_host_up_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['up']),
+        'hg_host_down_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['down']),
+        'hg_host_unreachable_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['unreachable']),
+        'hg_host_pending_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['pending']),
+        'host_state' => [],
+        'service_state' => [],
+    ];
 }
 $hgMonObj->getHostStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
 $hgMonObj->getServiceStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
+
+if ($detailMode === true) {
+    foreach ($data as $hostgroupName => &$properties) {
+        foreach ($properties['host_state'] as $hostName => &$hostProperties) {
+            $hostProperties['details_uri'] = $resourceController->buildHostDetailsUri($hostProperties['host_id']);
+        }
+        foreach ($properties['service_state'] as $hostId => &$services) {
+            foreach ($services as &$serviceProperties) {
+                $serviceProperties['details_uri'] = $resourceController->buildServiceDetailsUri(
+                    $hostId,
+                    $serviceProperties['service_id']
+                );
+            }
+        }
+    }
+}
 
 $autoRefresh = filter_var($preferences['refresh_interval'], FILTER_VALIDATE_INT);
 if ($autoRefresh === false || $autoRefresh < 5) {
