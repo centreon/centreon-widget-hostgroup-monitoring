@@ -163,32 +163,57 @@ $resourceController = $kernel->getContainer()->get(
     \Centreon\Application\Controller\MonitoringResourceController::class
 );
 
-$buildHostgroupUri = function($hostgroupId, $types, $statuses) use ($resourceController) {
+$buildHostgroupUri = function($hostgroup, $types, $statuses) use ($resourceController) {
     return $resourceController->buildListingUri([
         'filter' => json_encode([
-            'hostGroups' => [$hostgroupId],
-            'resourceTypes' => $types,
-            'statuses' => $statuses,
+            'criterias' => [
+                'hostGroups' => [$hostgroup],
+                'resourceTypes' => $types,
+                'statuses' => $statuses,
+            ],
         ]),
     ]);
 };
 
+$buildParameter = function($id, $name) {
+    return [
+        'id' => $id,
+        'name' => $name,
+    ];
+};
+
+$hostType = $buildParameter('host', 'Host');
+$serviceType = $buildParameter('service', 'Service');
+$okStatus = $buildParameter('OK', 'Ok');
+$warningStatus = $buildParameter('WARNING', 'Warning');
+$criticalStatus = $buildParameter('CRITICAL', 'Critical');
+$unknownStatus = $buildParameter('UNKNOWN', 'Unknown');
+$pendingStatus = $buildParameter('PENDING', 'Pending');
+$upStatus = $buildParameter('UP', 'Up');
+$downStatus = $buildParameter('DOWN', 'Down');
+$unreachableStatus = $buildParameter('UNREACHABLE', 'Unreachable');
+
 while ($row = $res->fetch()) {
+    $hostgroup = [
+        'id' => (int) $row['hostgroup_id'],
+        'name' => $row['name'],
+    ];
+
     $data[$row['name']] = [
         'name' => $row['name'],
         'hg_id' => $row['hostgroup_id'],
-        'hg_uri' => $buildHostgroupUri($row['hostgroup_id'], [], []),
-        'hg_service_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], []),
-        'hg_service_ok_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['ok']),
-        'hg_service_warning_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['warning']),
-        'hg_service_critical_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['critical']),
-        'hg_service_unknown_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['unknown']),
-        'hg_service_pending_uri' => $buildHostgroupUri($row['hostgroup_id'], ['service'], ['pending']),
-        'hg_host_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], []),
-        'hg_host_up_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['up']),
-        'hg_host_down_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['down']),
-        'hg_host_unreachable_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['unreachable']),
-        'hg_host_pending_uri' => $buildHostgroupUri($row['hostgroup_id'], ['host'], ['pending']),
+        'hg_uri' => $buildHostgroupUri($hostgroup, [], []),
+        'hg_service_uri' => $buildHostgroupUri($hostgroup, [$serviceType], []),
+        'hg_service_ok_uri' => $buildHostgroupUri($hostgroup, [$serviceType], [$okStatus]),
+        'hg_service_warning_uri' => $buildHostgroupUri($hostgroup, [$serviceType], [$warningStatus]),
+        'hg_service_critical_uri' => $buildHostgroupUri($hostgroup, [$serviceType], [$criticalStatus]),
+        'hg_service_unknown_uri' => $buildHostgroupUri($hostgroup, [$serviceType], [$unknownStatus]),
+        'hg_service_pending_uri' => $buildHostgroupUri($hostgroup, [$serviceType], [$pendingStatus]),
+        'hg_host_uri' => $buildHostgroupUri($hostgroup, [$hostType], []),
+        'hg_host_up_uri' => $buildHostgroupUri($hostgroup, [$hostType], [$upStatus]),
+        'hg_host_down_uri' => $buildHostgroupUri($hostgroup, [$hostType], [$downStatus]),
+        'hg_host_unreachable_uri' => $buildHostgroupUri($hostgroup, [$hostType], [$unreachableStatus]),
+        'hg_host_pending_uri' => $buildHostgroupUri($hostgroup, [$hostType], [$pendingStatus]),
         'host_state' => [],
         'service_state' => [],
     ];
