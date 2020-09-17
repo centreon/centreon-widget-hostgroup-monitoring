@@ -175,7 +175,7 @@ $buildHostgroupUri = function(array $hostgroup, array $types, array $statuses) u
     ]);
 };
 
-$buildParameter = function($id, $name) {
+$buildParameter = function(string $id, string $name) {
     return [
         'id' => $id,
         'name' => $name,
