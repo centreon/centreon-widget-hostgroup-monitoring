@@ -163,7 +163,7 @@ $resourceController = $kernel->getContainer()->get(
     \Centreon\Application\Controller\MonitoringResourceController::class
 );
 
-$buildHostgroupUri = function($hostgroup, $types, $statuses) use ($resourceController) {
+$buildHostgroupUri = function(array $hostgroup, array $types, array $statuses) use ($resourceController) {
     return $resourceController->buildListingUri([
         'filter' => json_encode([
             'criterias' => [
