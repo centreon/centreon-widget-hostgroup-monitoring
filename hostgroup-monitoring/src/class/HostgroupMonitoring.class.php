@@ -58,7 +58,7 @@ class HostgroupMonitoring
      * @param CentreonACL $aclObj
      * @param array $preferences
      */
-    public function getHostStates(&$data, $detailFlag = false, $admin, $aclObj, $preferences)
+    public function getHostStates(&$data, $admin, $aclObj, $preferences, $detailFlag = false)
     {
         if (!count($data)) {
             return array();
@@ -101,7 +101,7 @@ class HostgroupMonitoring
      * @param CentreonACL $aclObj
      * @param array $preferences
      */
-    public function getServiceStates(&$data, $detailFlag = false, $admin, $aclObj, $preferences)
+    public function getServiceStates(&$data, $admin, $aclObj, $preferences, $detailFlag = false)
     {
         if (!count($data)) {
             return array();
@@ -132,7 +132,8 @@ class HostgroupMonitoring
                 if (!isset($data[$k]['service_state'][$row['host_id']])) {
                     $data[$k]['service_state'][$row['host_id']] = array();
                 }
-                if (isset($data[$k]['service_state'][$row['host_id']])
+                if (
+                    isset($data[$k]['service_state'][$row['host_id']])
                     && !isset($data[$k]['service_state'][$row['host_id']][$row['service_id']])
                 ) {
                     $data[$k]['service_state'][$row['host_id']][$row['service_id']] = array();

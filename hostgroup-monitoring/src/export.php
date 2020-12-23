@@ -174,8 +174,8 @@ while ($row = $res->fetch()) {
     $data[$row['name']] = $hostgroup;
 }
 
-$sgMonObj->getHostStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
-$sgMonObj->getServiceStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$sgMonObj->getHostStates($data, $centreon->user->admin, $aclObj, $preferences, $detailMode);
+$sgMonObj->getServiceStates($data, $centreon->user->admin, $aclObj, $preferences, $detailMode);
 
 $template->assign('preferences', $preferences);
 $template->assign('hostStateLabels', $hostStateLabels);

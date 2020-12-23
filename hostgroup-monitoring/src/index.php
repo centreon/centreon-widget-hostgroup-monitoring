@@ -222,8 +222,8 @@ while ($row = $res->fetch()) {
         'service_state' => [],
     ];
 }
-$hgMonObj->getHostStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
-$hgMonObj->getServiceStates($data, $detailMode, $centreon->user->admin, $aclObj, $preferences);
+$hgMonObj->getHostStates($data, $centreon->user->admin, $aclObj, $preferences, $detailMode);
+$hgMonObj->getServiceStates($data, $centreon->user->admin, $aclObj, $preferences, $detailMode);
 
 if ($detailMode === true) {
     foreach ($data as $hostgroupName => &$properties) {
