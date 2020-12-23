@@ -167,13 +167,14 @@ $resourceController = $kernel->getContainer()->get(
 $buildHostgroupUri = function (array $hostgroup, array $types, array $statuses) use ($resourceController) {
     return $resourceController->buildListingUri(
         [
-            'filter' => json_encode([
-                'criterias' => [
-                    'hostGroups' => [$hostgroup],
-                    'resourceTypes' => $types,
-                    'statuses' => $statuses,
-                ],
-            ]
+            'filter' => json_encode(
+                [
+                    'criterias' => [
+                        'hostGroups' => [$hostgroup],
+                        'resourceTypes' => $types,
+                        'statuses' => $statuses,
+                    ],
+                ]
             )
         ]
     );
