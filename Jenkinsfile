@@ -85,7 +85,7 @@ try {
         )
 
         // Run sonarQube analysis
-        withSonarQubeEnv('SonarQube') {
+        withSonarQubeEnv('SonarQubeDev') {
           sh "./centreon-build/jobs/widgets/${serie}/widget-analysis.sh"
         }
       }
