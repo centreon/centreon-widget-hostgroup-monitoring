@@ -4,6 +4,14 @@
 properties([buildDiscarder(logRotator(numToKeepStr: '50'))])
 def serie = '21.04'
 def maintenanceBranch = "${serie}.x"
+
+
+
+
+env.BRANCH_NAME='master'
+
+
+
 if (env.BRANCH_NAME.startsWith('release-')) {
   env.BUILD = 'RELEASE'
 } else if ((env.BRANCH_NAME == 'master') || (env.BRANCH_NAME == maintenanceBranch)) {
@@ -76,15 +84,27 @@ try {
           trendChartType: 'NONE'
         )
 
-        if ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE')) {
-          withSonarQubeEnv('SonarQube') {
-            sh "./centreon-build/jobs/widgets/${serie}/widget-analysis.sh"
-          }
+        // Run sonarQube analysis
+        withSonarQubeEnv('SonarQube') {
+          sh "./centreon-build/jobs/widgets/${serie}/widget-analysis.sh"
         }
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Unit tests stage failure.');
+    }
+  }
+
+  // sonarQube step to get qualityGate result
+  stage('Quality gate') {
+    timeout(time: 10, unit: 'MINUTES') {
+      def qualityGate = waitForQualityGate()
+      if (qualityGate.status != 'OK') {
+        currentBuild.result = 'FAIL'
+      }
+    }
+    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+      error('Quality gate failure: ${qualityGate.status}.');
     }
   }
 
