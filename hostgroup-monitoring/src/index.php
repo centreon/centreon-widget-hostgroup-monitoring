@@ -93,18 +93,18 @@ $aColorService = array(
 
 
 $hostStateColors = array(
-    0 => "#88b917",
-    1 => "#e00b3d",
-    2 => "#82CFD8",
-    4 => "#2ad1d4"
+    0 => "#88B917",
+    1 => "#E00B3D",
+    2 => "#818285",
+    4 => "#2AD1D4"
 );
 
 $serviceStateColors = array(
-    0 => "#88b917",
-    1 => "#F8C706",
-    2 => "#e00b3d",
-    3 => "#DCDADA",
-    4 => "#2ad1d4"
+    0 => "#88B917",
+    1 => "#FF9A13",
+    2 => "#E00B3D",
+    3 => "#BCBDC0",
+    4 => "#2AD1D4"
 );
 
 
